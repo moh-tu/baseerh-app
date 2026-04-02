@@ -196,76 +196,63 @@ def auth_page():
                 st.warning("الرجاء تعبئة جميع الخانات")
 def app_interface():
     st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    <style>
+        /* 1. الخط والاتجاه العام */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-/* الخط */
-* { 
-    font-family: 'Cairo', sans-serif; 
-}
+        /* 2. إخفاء الرموز المزعجة (الحل الجذري) */
+        header { visibility: hidden !important; height: 0px !important; }
+        .stDeployButton, #MainMenu { display: none !important; }
 
-/* إخفاء الهيدر */
-header[data-testid="stHeader"] {
-    display: none !important;
-}
+        /* 3. تعديل القائمة الجانبية (Sidebar) لليمين */
+        [data-testid="stSidebar"] {
+            position: fixed;
+            right: 0 !important;
+            left: auto !important;
+            direction: RTL !important;
+            text-align: right !important;
+            border-left: 1px solid #30363d;
+        }
 
-/* الاتجاه */
-.stApp {
-    direction: rtl;
-    text-align: right;
-}
+        /* 4. التحكم في العرض حسب نوع الجهاز (الذكاء هنا) */
+        
+        /* --- أجهزة اللابتوب (الشاشات الكبيرة) --- */
+        @media (min-width: 992px) {
+            [data-testid="stSidebar"] { width: 300px !important; }
+            [data-testid="stMain"] { margin-right: 300px !important; margin-left: 0 !important; }
+        }
 
-/* Sidebar طبيعي */
-[data-testid="stSidebar"] {
-    direction: rtl;
-    text-align: right;
-}
+        /* --- أجهزة الجوال (الشاشات الصغيرة) --- */
+        @media (max-width: 991px) {
+            [data-testid="stSidebar"] { 
+                width: 70% !important; /* تصغير عرض القائمة الجانبية لتناسب شاشة الجوال */
+                min-width: 250px !important;
+            }
+            [data-testid="stMain"] { 
+                margin-right: 0 !important; 
+                padding: 10px !important; /* تقليل الحواف الجانبية في الجوال */
+            }
+            .main-title { font-size: 18px !important; } /* تصغير العنوان لكي لا ينكسر */
+            .stTabs [data-baseweb="tab"] { font-size: 12px !important; padding: 5px !important; } /* تصغير التبويبات */
+            
+            /* إخفاء القائمة الجانبية في الجوال حتى يفتحها المستخدم */
+            [data-testid="stSidebar"][aria-expanded="false"] {
+                margin-right: -350px !important;
+            }
+        }
 
-/* ✨ أهم شي: إصلاح الجوال */
-@media (max-width: 768px) {
+        /* 5. منع تداخل النصوص والكلمات المكسورة */
+        .st-emotion-cache-1aege4m, .st-emotion-cache-1vt4lm1 {
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis !important;
+        }
 
-    /* خلي السايدبار يختفي طبيعي */
-    [data-testid="stSidebar"] {
-        min-width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    /* النصوص ما تطلع برا */
-    .block-container {
-        padding: 1rem !important;
-    }
-
-    /* تصغير الخط شوي */
-    html, body {
-        font-size: 14px;
-    }
-
-    /* إصلاح الأزرار */
-    button {
-        width: 100% !important;
-    }
-}
-
-/* selectbox */
-.stSelectbox div[data-baseweb="select"] {
-    direction: rtl;
-}
-
-/* إخفاء أزرار مزعجة */
-#MainMenu, .stDeployButton {
-    display: none !important;
-}
-
-/* كرت النتائج */
-.result-card {
-    background-color: #1e2329;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #30363d;
-    margin-bottom: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
+        /* 6. تحسين شكل الأزرار في الجوال لسهولة النقر */
+        .stButton button { width: 100% !important; border-radius: 10px !important; }
+    </style>
+    """, unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
