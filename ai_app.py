@@ -200,40 +200,50 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 1. إخفاء الهيدر تماماً */
-        header, [data-testid="stHeader"] { display: none !important; }
+        /* 1. إخفاء الهيدر والسايدبار الافتراضي تماماً وبشكل قطعي */
+        header, [data-testid="stHeader"], [data-testid="stSidebar"], .st-emotion-cache-6q9sum {
+            display: none !important;
+            visibility: hidden !important;
+            width: 0px !important;
+        }
 
-        /* 2. تنظيف داخل القائمة الجانبية (الهدف المطلوب) */
-        /* إخفاء أي أزرار أو نصوص برمجية تظهر في أعلى السايدبار */
-        [data-testid="stSidebar"] button {
-            border: none !important;
-            background: transparent !important;
+        /* 2. تنسيق الصفحة لتكون كاملة العرض وبدون حواف جانبية */
+        section[data-testid="stMain"] {
+            width: 100% !important;
+            padding: 0px !important;
+            margin: 0px !important;
+        }
+
+        /* 3. تنسيق اللوجو في منتصف الصفحة */
+        .main-logo-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        .main-logo {
+            width: 150px; /* تحكم في حجم اللوجو من هنا */
+        }
+
+        /* 4. تنسيق زر القائمة (☰) ليكون في الزاوية اليمنى */
+        .menu-btn-container {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            z-index: 1000;
         }
         
-        /* إخفاء أيقونات الأسهم والكلمات المزعجة داخل السايدبار */
-        [data-testid="stSidebar"] [data-testid="stSidebarNav"], 
-        [data-testid="stSidebar"] svg, 
-        [data-testid="stSidebar"] .st-emotion-cache-fblp2m  {
-            display: none !important;
-        }
-
-        /* إخفاء الفراغ العلوي المخصص للأزرار الافتراضية داخل السايدبار */
-        [data-testid="stSidebar"] .st-emotion-cache-6q9sum,
-        [data-testid="stSidebar"] .st-emotion-cache-18ni7ve {
-            display: none !important;
-        }
-
-        /* 3. تثبيت القائمة في اليمين */
-        [data-testid="stSidebar"] {
-            right: 0 !important;
-            left: auto !important;
-            direction: RTL !important;
+        /* 5. تصميم "القائمة المخصصة" التي ستظهر فوق الصفحة */
+        .custom-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background-color: #161b22;
+            z-index: 2000;
+            padding: 20px;
             border-left: 1px solid #30363d;
-        }
-        
-        /* 4. تعديل زر الإغلاق والفتح ليصبح نظيفاً */
-        .stButton button {
-            border-radius: 8px !important;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
         }
     </style>
     """, unsafe_allow_html=True)
@@ -249,47 +259,62 @@ def app_interface():
         return
 
     # إدارة حالة القائمة
-    if 'sidebar_state' not in st.session_state:
-        st.session_state.sidebar_state = False 
+    if 'show_menu' not in st.session_state:
+        st.session_state.show_menu = False
 
-    # --- حقن الشريط العلوي الجديد باستخدام HTML ---
-    st.markdown(f"""
-    <div class="custom-top-bar">
-        <img src="https://raw.githubusercontent.com/mohamedm74/baseerh-app/main/logo1.png.png" class="top-bar-logo">
-        <div style="color: white; font-size: 1.2rem; font-weight: bold;">بصيرة</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # زر واحد فقط في أعلى اليمين للتحكم، نضعه في كولوم صغير
-    col_btn, _ = st.columns([1, 12])
-    with col_btn:
+    # --- الجزء العلوي (اللوجو والزر) ---
+    # وضع الزر في أقصى اليمين واللوجو في المنتصف
+    col_r, col_c, col_l = st.columns([1, 4, 1])
+    
+    with col_r:
         if st.button("☰"): 
-            st.session_state.sidebar_state = not st.session_state.sidebar_state
+            st.session_state.show_menu = not st.session_state.show_menu
             st.rerun()
 
-    # محتوى القائمة الجانبية
-    if st.session_state.sidebar_state:
-        with st.sidebar:
+    with col_c:
+        # عرض اللوجو في المنتصف
+        st.markdown('<div class="main-logo-container">', unsafe_allow_html=True)
+        try:
+            st.image("logo1.png.png", width=150) # تأكد من اسم الملف
+        except:
+            st.write("### بصيرة 🔎")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- منطق القائمة الجانبية "الوهمية" ---
+    if st.session_state.show_menu:
+        # نستخدم st.container لمحاكاة السايدبار بدون مشاكل الكلمات البرمجية
+        with st.container():
+            st.markdown('<div class="custom-sidebar">', unsafe_allow_html=True)
             if st.button("❌ إغلاق"):
-                st.session_state.sidebar_state = False
+                st.session_state.show_menu = False
                 st.rerun()
             
-            st.markdown(f"<h4 style='text-align: center;'>أهلاً {st.session_state['username']}</h4>", unsafe_allow_html=True)
             st.divider()
-
-            # القائمة (الراديو الوحيد)
+            st.write(f"أهلاً {st.session_state['username']}")
+            
             menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
             active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
-            choice = st.radio("انتقل إلى:", active_menu, key="nav_radio")
-            st.session_state.last_choice = choice
-
+            
+            # عرض الخيارات كأزرار بدلاً من راديو لتجنب مشاكل التنسيق
+            for item in active_menu:
+                if st.button(item, use_container_width=True):
+                    st.session_state.last_choice = item
+                    st.session_state.show_menu = False
+                    st.rerun()
+            
             st.divider()
-            # زر تسجيل الخروج الوحيد
             if st.button("🚪 تسجيل الخروج", use_container_width=True):
                 st.session_state['logged_in'] = False
                 st.rerun()
-    else:
-        choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    # تحديد الخيار الحالي
+    choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
+
+    # --- محتوى الصفحة الرئيسي ---
+    if not st.session_state.show_menu:
+        st.markdown(f"<h2 style='text-align: center;'>{choice}</h2>", unsafe_allow_html=True)
+        # هنا يكمل باقي كود استخراج وتحليل البيانات (السطر 263 وما بعده)
     # بقية الكود كما هو...
 
     if choice == "🔍 التحليل الذكي":
