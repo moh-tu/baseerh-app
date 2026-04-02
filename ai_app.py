@@ -14,75 +14,40 @@ st.set_page_config(page_title="بصيرة | خبير المناقصات", layout
 
 st.markdown("""
 <style>
-    /* 1. استيراد الخط وتنسيق النص العام */
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    
-    html, body, [class*="st-"] {
-        font-family: 'Cairo', sans-serif;
-        direction: RTL;
-        text-align: right;
-    }
-
-    /* 2. الإخفاء المطلق للسايدبار والهيدر الافتراضي */
-    section[data-testid="stSidebar"], 
-    div[data-testid="stSidebarNav"],
-    header[data-testid="stHeader"],
-    .st-emotion-cache-6q9sum,
-    .st-emotion-cache-16idsys {
+    /* إخفاء السايدبار الأصلي وإلغاء مساحته تماماً */
+    [data-testid="stSidebar"] {
         display: none !important;
-        width: 0px !important;
-        position: fixed !important;
-        left: -1000px !important;
+        width: 0 !important;
     }
-
-    /* 3. إلغاء الهوامش وإجبار المحتوى على أخذ كامل العرض */
+    
+    /* إلغاء الهامش الأيسر الذي يحجزه ستريمليت تلقائياً */
+    [data-testid="stSidebarCollapseButton"] {
+        display: none !important;
+    }
+    
     .main .block-container {
         max-width: 100% !important;
         width: 100% !important;
-        padding: 2rem 5% !important;
-        margin: 0px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
 
-    /* 4. تصميم القائمة العائمة (تظهر فوق كل شيء) */
+    /* تصميم القائمة العائمة (التعديل الأهم) */
     .floating-nav {
         position: fixed;
         top: 0;
         right: 0;
-        width: 350px; /* عرض القائمة */
+        width: 300px;
         height: 100vh;
         background-color: #161b22;
-        z-index: 999999 !important; /* لضمان ظهورها فوق المحتوى */
-        padding: 50px 25px;
-        border-left: 2px solid #30363d;
-        box-shadow: -15px 0 40px rgba(0,0,0,0.8);
-        overflow-y: auto;
-    }
-
-    /* 5. تنسيق كروت النتائج والتبويبات */
-    .result-card {
-        background: #1c2128;
-        border-radius: 12px;
-        border: 1px solid #30363d;
-        padding: 25px;
-        margin-top: 15px;
-        border-right: 6px solid #007BFF;
-        color: #adbac7;
-    }
-
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #1c2128;
-        border-radius: 8px 8px 0 0;
-        padding: 10px 20px;
-        color: white;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #007BFF !important;
-    }
-
-    /* تحسين شكل الأزرار داخل القائمة */
-    .floating-nav button {
-        margin-bottom: 10px !important;
+        z-index: 999999;
+        padding: 40px 20px;
+        border-left: 1px solid #30363d;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -266,18 +231,18 @@ def app_interface():
     u_info = c.fetchone()
     
     # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
+    # 1. التحقق من بيانات المستخدم
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # 2. إدارة حالة القائمة المنسدلة (Overlay)
+    # 2. إدارة حالة القائمة المنسدلة
     if 'menu_active' not in st.session_state:
         st.session_state.menu_active = False
 
     # 3. الهيدر الرئيسي (اللوجو والترحيب)
     st.markdown('<div style="text-align:center; padding-bottom:15px;">', unsafe_allow_html=True)
     try:
-        # تأكد أن اسم ملف اللوجو صحيح تماماً
         st.image("logo1.png.png", width=110) 
     except:
         pass
@@ -285,45 +250,59 @@ def app_interface():
     st.markdown(f"<p style='color:#007BFF; font-weight:bold; margin-top:5px;'>أهلاً بك، {st.session_state['username']}</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. زر فتح المنيو (يظهر بشكل جانبي وأنيق)
-    col_menu, _ = st.columns([1, 8])
-    with col_menu:
-        if st.button("☰ القائمة", use_container_width=True):
-            st.session_state.menu_active = True
-            st.rerun()
+    # 4. زر فتح المنيو (بدون أعمدة لضمان عدم حجز مساحة جانبية)
+    if st.button("☰ القائمة الرئيسية"):
+        st.session_state.menu_active = True
+        st.rerun()
 
     # 5. منطق القائمة العائمة (Overlay)
     if st.session_state.menu_active:
-        # تفعيل الـ CSS اللي حطيناه فوق للكلاس floating-nav
-        st.markdown('<div class="floating-nav">', unsafe_allow_html=True)
+        # إجبار القائمة على الظهور فوق المحتوى تماماً عبر CSS مباشر
+        st.markdown("""
+            <style>
+            .floating-nav-container {
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 320px;
+                height: 100vh;
+                background-color: #161b22;
+                z-index: 999999;
+                padding: 50px 20px;
+                border-left: 2px solid #30363d;
+                box-shadow: -15px 0 35px rgba(0,0,0,0.8);
+                display: block;
+            }
+            </style>
+            <div class="floating-nav-container">
+        """, unsafe_allow_html=True)
         
-        # زر الإغلاق في أعلى المنيو
-        if st.button("❌ إغلاق القائمة", key="close_overlay", use_container_width=True):
+        # أزرار داخل المنيو
+        if st.button("❌ إغلاق القائمة", key="close_overlay_btn", use_container_width=True):
             st.session_state.menu_active = False
             st.rerun()
         
-        st.markdown("<br><h3 style='text-align: center; color: white;'>التنقل السريع</h3>", unsafe_allow_html=True)
+        st.markdown("<br><h3 style='text-align: center; color: white;'>التنقل</h3>", unsafe_allow_html=True)
         st.divider()
         
-        # خيارات التنقل كأزرار احترافية
         nav_items = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
+        # التحقق من صلاحياتك يا محمد كأدمن
         active_items = nav_items if st.session_state['username'] == "mohammed.admin" else nav_items[:2]
         
         for item in active_items:
-            if st.button(item, key=f"btn_{item}", use_container_width=True):
+            if st.button(item, key=f"nav_btn_{item}", use_container_width=True):
                 st.session_state.last_choice = item
                 st.session_state.menu_active = False
                 st.rerun()
         
         st.divider()
-        # زر تسجيل الخروج
-        if st.button("🚪 تسجيل الخروج", key="logout_sidebar", use_container_width=True):
+        if st.button("🚪 تسجيل الخروج", key="logout_final", use_container_width=True):
             st.session_state['logged_in'] = False
             st.rerun()
             
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 6. تحديد الصفحة النشطة لعرض محتواها
+    # 6. تحديد الصفحة النشطة
     choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
     
     # --- هنا يبدأ محتوى الصفحات (if choice == "🔍 التحليل الذكي" ... إلخ) ---
