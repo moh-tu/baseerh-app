@@ -200,22 +200,35 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 1. نسف السايدبار والهيدر الأصلي تماماً ومنع الإزاحة */
-        [data-testid="stSidebar"], [data-testid="stHeader"], .st-emotion-cache-6q9sum {
+        /* 1. الإخفاء المطلق والنهائي للسايدبار وكل توابعه */
+        section[data-testid="stSidebar"], 
+        div[data-testid="stSidebarNav"],
+        div[data-testid="stSidebarUserContent"],
+        .st-emotion-cache-6q9sum, 
+        .st-emotion-cache-16idsys, 
+        .st-emotion-cache-18ni7ve {
             display: none !important;
             width: 0px !important;
-            position: absolute !important;
-            left: -9999px !important;
+            position: fixed !important;
+            left: -1000px !important;
+            visibility: hidden !important;
         }
 
-        /* 2. جعل المحتوى الرئيسي يتوسط الشاشة وبكامل العرض */
+        /* 2. إجبار المحتوى الرئيسي على التمدد وإلغاء الهوامش الإفتراضية */
         .main .block-container {
             max-width: 100% !important;
-            padding: 2rem !important;
-            margin: 0 auto !important;
+            width: 100% !important;
+            padding: 1rem !important;
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+        }
+        
+        /* لإلغاء أي مساحة بيضاء في الأعلى تسببها الهيدر الافتراضي */
+        header[data-testid="stHeader"] {
+            display: none !important;
         }
 
-        /* 3. تصميم لوحة القائمة العائمة (Overlay) */
+        /* 3. تصميم المنيو العائمة (نفس اللي اتفقت عليه) */
         .floating-nav {
             position: fixed;
             top: 0; right: 0;
@@ -414,8 +427,6 @@ def app_interface():
                     conn.commit()
                     st.success(f"✅ تم تحديث بيانات {user[0]} بنجاح!")
                     st.rerun()
-
-    
 
 def main():
     if not st.session_state['logged_in']:
