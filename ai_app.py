@@ -200,43 +200,31 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 1. إخفاء السايدبار والهيدر الأصلي تماماً ومنع الإزاحة */
+        /* 1. إخفاء الهيدر والسايدبار تماماً ومنع أي إزاحة للشاشة */
         [data-testid="stSidebar"], [data-testid="stHeader"], .st-emotion-cache-6q9sum {
             display: none !important;
             width: 0px !important;
+            position: absolute !important;
+            left: -9999px !important;
         }
-        
-        /* 2. جعل المحتوى يأخذ كامل الشاشة دائماً */
+
+        /* 2. جعل التطبيق يأخذ كامل عرض الشاشة 100% */
         .main .block-container {
             max-width: 100% !important;
-            padding: 1rem !important;
-            margin-top: 50px !important;
+            padding: 0rem !important;
+            margin: 0 !important;
         }
 
-        /* 3. تصميم الشريط العلوي الثابت */
-        .top-header {
-            position: fixed;
-            top: 0; right: 0; left: 0;
-            height: 60px;
-            background-color: #0e1117;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 999;
-            border-bottom: 1px solid #30363d;
-        }
-
-        /* 4. تصميم القائمة العائمة (Floating Menu) */
-        .floating-menu {
+        /* 3. تصميم القائمة العائمة الاحترافية */
+        .custom-nav-panel {
             position: fixed;
             top: 0; right: 0;
-            width: 280px; height: 100%;
+            width: 300px; height: 100%;
             background-color: #161b22;
-            z-index: 1000;
-            padding: 20px;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-            transition: 0.3s;
+            z-index: 10000;
+            padding: 30px 20px;
+            border-left: 1px solid #30363d;
+            box-shadow: -10px 0 20px rgba(0,0,0,0.5);
         }
     </style>
     """, unsafe_allow_html=True)
@@ -251,52 +239,44 @@ def app_interface():
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # إنشاء حالة القائمة
+    # حالة القائمة
     if 'menu_open' not in st.session_state:
         st.session_state.menu_open = False
 
-    # --- الهيدر العلوي ---
-    st.markdown('''
-        <div class="top-header">
-            <div style="font-size: 20px; font-weight: bold; color: white;">بصيرة 🔎</div>
-        </div>
-    ''', unsafe_allow_html=True)
-
-    # زر المنيو (يظهر دائماً فوق الهيدر)
-    t1, t2 = st.columns([1, 8])
-    with t1:
-        if st.button("☰"):
-            st.session_state.menu_open = not st.session_state.menu_open
+    # زر المنيو الوحيد (يظهر في زاوية الصفحة)
+    if not st.session_state.menu_open:
+        if st.button("☰ القائمة"):
+            st.session_state.menu_open = True
             st.rerun()
 
-    # --- القائمة العائمة (تظهر فقط عند الضغط) ---
+    # القائمة المخصصة
     if st.session_state.menu_open:
         with st.container():
-            st.markdown('<div class="floating-menu">', unsafe_allow_html=True)
+            st.markdown('<div class="custom-nav-panel">', unsafe_allow_html=True)
             if st.button("❌ إغلاق"):
                 st.session_state.menu_open = False
                 st.rerun()
             
-            st.markdown(f"**أهلاً {st.session_state['username']} 👋**")
+            st.markdown(f"<h3 style='text-align: center;'>بصيرة 🔎</h3>", unsafe_allow_html=True)
+            st.markdown(f"<p style='text-align: center;'>أهلاً {st.session_state['username']}</p>", unsafe_allow_html=True)
             st.divider()
             
             menu_options = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
             active_menu = menu_options if st.session_state['username'] == "mohammed.admin" else menu_options[:2]
             
-            # عرض الخيارات كأزرار أنيقة
             for opt in active_menu:
-                if st.button(opt, use_container_width=True):
+                if st.button(opt, key=f"nav_{opt}", use_container_width=True):
                     st.session_state.last_choice = opt
                     st.session_state.menu_open = False
                     st.rerun()
             
             st.divider()
-            if st.button("🚪 تسجيل الخروج", use_container_width=True):
+            if st.button("🚪 تسجيل الخروج", key="exit_btn", use_container_width=True):
                 st.session_state['logged_in'] = False
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # تحديد الصفحة الحالية
+    # تحديد اختيار المستخدم
     choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
         # هنا يكمل باقي كود استخراج وتحليل البيانات (السطر 263 وما بعده)
     # بقية الكود كما هو...
