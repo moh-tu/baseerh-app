@@ -245,18 +245,31 @@ def app_interface():
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
     
+    # 1. اترك هذا الجزء كما هو (للأمان)
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    try:
-        st.sidebar.image("logo1.png.png", use_container_width=True)
-    except: pass
-    
-    st.sidebar.title(f"👋 أهلاً {st.session_state['username']}")
-    menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
-    active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
-    choice = st.sidebar.radio("القائمة:", active_menu)
+    # 2. الآن استبدل كل ما بعده بهذا الكود المحدث
+    with st.sidebar:
+        try:
+            st.image("Logo1.png", use_container_width=True)
+        except:
+            pass
+            
+        st.markdown(f"<h3 style='text-align: center; color: white;'>أهلاً {st.session_state['username']} 👋</h3>", unsafe_allow_html=True)
+        st.divider()
+
+        menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
+        active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
+        
+        choice = st.radio("القائمة الرئيسية:", active_menu)
+
+        st.divider()
+        
+        if st.button("🚪 تسجيل الخروج", use_container_width=True):
+            st.session_state['logged_in'] = False
+            st.rerun()
 
     # بقية الكود كما هو...
 
