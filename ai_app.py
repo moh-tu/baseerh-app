@@ -14,40 +14,28 @@ st.set_page_config(page_title="بصيرة | خبير المناقصات", layout
 
 st.markdown("""
 <style>
-    /* إخفاء السايدبار الأصلي وإلغاء مساحته تماماً */
-    [data-testid="stSidebar"] {
-        display: none !important;
-        width: 0 !important;
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    
+    html, body, [class*="st-"] {
+        font-family: 'Cairo', sans-serif;
+        direction: RTL;
+        text-align: right;
     }
     
-    /* إلغاء الهامش الأيسر الذي يحجزه ستريمليت تلقائياً */
-    [data-testid="stSidebarCollapseButton"] {
-        display: none !important;
+    .main-title {
+        color: #007BFF;
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 20px;
     }
     
-    .main .block-container {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
-
-    /* تصميم القائمة العائمة (التعديل الأهم) */
-    .floating-nav {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 300px;
-        height: 100vh;
-        background-color: #161b22;
-        z-index: 999999;
-        padding: 40px 20px;
-        border-left: 1px solid #30363d;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-        display: flex;
-        flex-direction: column;
+    .result-card {
+        background-color: #1c2128;
+        border-radius: 10px;
+        padding: 20px;
+        border-right: 5px solid #007BFF;
+        margin-bottom: 15px;
+        color: #adbac7;
     }
 </style>
 """, unsafe_allow_html=True)
