@@ -44,19 +44,20 @@ st.markdown("""
     }
 
     /* 4. تصميم القائمة العائمة (تظهر فوق كل شيء) */
-    .floating-nav {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 350px; /* عرض القائمة */
-        height: 100vh;
-        background-color: #161b22;
-        z-index: 999999 !important; /* لضمان ظهورها فوق المحتوى */
-        padding: 50px 25px;
-        border-left: 2px solid #30363d;
-        box-shadow: -15px 0 40px rgba(0,0,0,0.8);
-        overflow-y: auto;
-    }
+    ..floating-nav {
+    position: fixed;
+    top: 0;
+    right: -400px; /* مخفية */
+    width: 350px;
+    height: 100vh;
+    background-color: #161b22;
+    transition: 0.3s ease;
+    z-index: 999999 !important;
+}
+
+.floating-nav.active {
+    right: 0; /* تظهر */
+}
 
     /* 5. تنسيق كروت النتائج والتبويبات */
     .result-card {
@@ -268,6 +269,7 @@ def app_interface():
     # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
     # 1. التحقق من بيانات المستخدم
     # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
+    # 1. التحقق من بيانات المستخدم
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
@@ -276,10 +278,12 @@ def app_interface():
     if 'menu_active' not in st.session_state:
         st.session_state.menu_active = False
 
+    # التعديل الجديد: تحديد الكلاس ديناميكياً
+    menu_class = "floating-nav active" if st.session_state.menu_active else "floating-nav"
+
     # 3. الهيدر الرئيسي (اللوجو والترحيب)
     st.markdown('<div style="text-align:center; padding-bottom:15px;">', unsafe_allow_html=True)
     try:
-        # تأكد أن اسم ملف اللوجو صحيح تماماً
         st.image("logo1.png.png", width=110) 
     except:
         pass
@@ -287,19 +291,18 @@ def app_interface():
     st.markdown(f"<p style='color:#007BFF; font-weight:bold; margin-top:5px;'>أهلاً بك، {st.session_state['username']}</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. زر فتح المنيو (يظهر بشكل جانبي وأنيق)
+    # 4. زر فتح المنيو
     col_menu, _ = st.columns([1, 8])
     with col_menu:
         if st.button("☰ القائمة", use_container_width=True):
             st.session_state.menu_active = True
             st.rerun()
 
-    # 5. منطق القائمة العائمة (Overlay)
+    # 5. منطق القائمة العائمة باستخدام الكلاس المطور
+    st.markdown(f'<div class="{menu_class}">', unsafe_allow_html=True)
+    
+    # محتويات القائمة تظهر فقط عند التفعيل
     if st.session_state.menu_active:
-        # تفعيل الـ CSS اللي حطيناه فوق للكلاس floating-nav
-        st.markdown('<div class="floating-nav">', unsafe_allow_html=True)
-        
-        # زر الإغلاق في أعلى المنيو
         if st.button("❌ إغلاق القائمة", key="close_overlay", use_container_width=True):
             st.session_state.menu_active = False
             st.rerun()
@@ -307,7 +310,7 @@ def app_interface():
         st.markdown("<br><h3 style='text-align: center; color: white;'>التنقل السريع</h3>", unsafe_allow_html=True)
         st.divider()
         
-        # خيارات التنقل كأزرار احترافية
+        # خيارات التنقل
         nav_items = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
         active_items = nav_items if st.session_state['username'] == "mohammed.admin" else nav_items[:2]
         
@@ -318,12 +321,11 @@ def app_interface():
                 st.rerun()
         
         st.divider()
-        # زر تسجيل الخروج
         if st.button("🚪 تسجيل الخروج", key="logout_sidebar", use_container_width=True):
             st.session_state['logged_in'] = False
             st.rerun()
             
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # 6. تحديد الصفحة النشطة لعرض محتواها
     choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
