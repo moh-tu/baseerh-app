@@ -9,6 +9,43 @@ from PIL import Image
 import smtplib
 import random
 from email.mime.text import MIMEText
+
+st.set_page_config(page_title="خبير المناقصات | بصيرة", layout="wide")
+
+# هذا الكود "يقتل" السايدبار في كل الصفحات (الدخول والتطبيق)
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    * { font-family: 'Cairo', sans-serif; direction: RTL; }
+
+    /* إخفاء السايدبار والهيدر الافتراضي */
+    section[data-testid="stSidebar"], 
+    div[data-testid="stSidebarNav"],
+    header[data-testid="stHeader"] {
+        display: none !important;
+        width: 0px !important;
+    }
+
+    /* توسيع المحتوى ليأخذ كامل عرض الشاشة */
+    .main .block-container {
+        max-width: 100% !important;
+        padding: 1rem 2rem !important;
+        margin: 0px !important;
+    }
+
+    /* تنسيق المنيو العائمة */
+    .floating-nav {
+        position: fixed;
+        top: 0; right: 0;
+        width: 300px; height: 100%;
+        background-color: #161b22;
+        z-index: 10000;
+        padding: 40px 20px;
+        border-left: 1px solid #30363d;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.7);
+    }
+</style>
+""", unsafe_allow_html=True)
 # --- تحميل اللوقو ---
 # --- تحميل اللوقو ---
 def send_verification_code(email, code):
@@ -115,18 +152,7 @@ def process_selection(selected, u_info, model, key_suffix):
             st.error("🚫 عذراً، لقد انتهت محاولاتك لليوم.")
 
 # --- 3. التنسيق والخطوط ---
-st.set_page_config(page_title="خبير المناقصات | Smart Tabs", layout="wide")
-st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-<style>
-    html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; }
-    .main-title { color: #007BFF; font-weight: 700; text-align: center; margin-bottom: 20px; }
-    .result-card { background: #1c2128; border-radius: 12px; border: 1px solid #30363d; padding: 25px; margin-top: 15px; border-right: 6px solid #007BFF; color: #adbac7; line-height: 1.8; }
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
-    .stTabs [data-baseweb="tab"] { background-color: #1c2128; border-radius: 10px 10px 0 0; padding: 10px 20px; color: white; }
-    .stTabs [aria-selected="true"] { background-color: #007BFF !important; }
-</style>
-""", unsafe_allow_html=True)
+
 
 
 # --- 4. إدارة الجلسة والدخول ---
@@ -195,96 +221,48 @@ def auth_page():
             else:
                 st.warning("الرجاء تعبئة جميع الخانات")
 def app_interface():
-    st.markdown("""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-        * { font-family: 'Cairo', sans-serif; direction: RTL; }
-
-        /* 1. الإخفاء المطلق والنهائي للسايدبار وكل توابعه */
-        section[data-testid="stSidebar"], 
-        div[data-testid="stSidebarNav"],
-        div[data-testid="stSidebarUserContent"],
-        .st-emotion-cache-6q9sum, 
-        .st-emotion-cache-16idsys, 
-        .st-emotion-cache-18ni7ve {
-            display: none !important;
-            width: 0px !important;
-            position: fixed !important;
-            left: -1000px !important;
-            visibility: hidden !important;
-        }
-
-        /* 2. إجبار المحتوى الرئيسي على التمدد وإلغاء الهوامش الإفتراضية */
-        .main .block-container {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding: 1rem !important;
-            margin-left: 0px !important;
-            margin-right: 0px !important;
-        }
-        
-        /* لإلغاء أي مساحة بيضاء في الأعلى تسببها الهيدر الافتراضي */
-        header[data-testid="stHeader"] {
-            display: none !important;
-        }
-
-        /* 3. تصميم المنيو العائمة (نفس اللي اتفقت عليه) */
-        .floating-nav {
-            position: fixed;
-            top: 0; right: 0;
-            width: 300px; height: 100%;
-            background-color: #161b22;
-            z-index: 10000;
-            padding: 40px 20px;
-            border-left: 1px solid #30363d;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.7);
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
+    # 1. جلب بيانات المستخدم من قاعدة البيانات
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
     
-    # 1. اترك التحقق من البيانات (مهم جداً للأمان)
-    # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
-    # التحقق من البيانات
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # حالة القائمة (مفتوحة أو مغلقة)
+    # 2. إدارة حالة القائمة المنسدلة
     if 'menu_active' not in st.session_state:
         st.session_state.menu_active = False
 
-    # --- الهيدر الرئيسي (اللوجو والترحيب في أعلى الصفحة) ---
-    st.markdown('<div class="header-box" style="text-align:center;">', unsafe_allow_html=True)
+    # 3. الهيدر الرئيسي (اللوجو والعنوان) - يظهر دائماً في الأعلى
+    st.markdown('<div style="text-align:center; padding-bottom:10px;">', unsafe_allow_html=True)
     try:
-        st.image("logo1.png.png", width=100) # تأكد من وجود الملف بهذا الاسم
+        st.image("logo1.png.png", width=100) 
     except:
         pass
     st.markdown(f"<h3>بصيرة 🔎</h3><p style='color:#007BFF; font-weight:bold;'>أهلاً {st.session_state['username']}</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # زر المنيو (يظهر أسفل الهيدر أو بجانبه)
+    # 4. زر المنيو (☰) - يظهر بشكل أنيق تحت الهيدر
     col_menu, _ = st.columns([1, 10])
     with col_menu:
         if st.button("☰ القائمة"):
             st.session_state.menu_active = True
             st.rerun()
 
-    # لوحة القائمة العائمة (Overlay)
+    # 5. منطق القائمة العائمة (تظهر كـ Overlay عند النقر على الزر)
     if st.session_state.menu_active:
         with st.container():
+            # الـ CSS الخاص بـ floating-nav موجود الآن في أعلى الملف فلا تقلق
             st.markdown('<div class="floating-nav">', unsafe_allow_html=True)
             
             if st.button("❌ إغلاق"):
                 st.session_state.menu_active = False
                 st.rerun()
             
-            st.markdown("<h3 style='text-align: center;'>القائمة الرئيسية</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: white;'>القائمة الرئيسية</h3>", unsafe_allow_html=True)
             st.divider()
             
-            # خيارات التنقل كأزرار احترافية
+            # خيارات التنقل (أزرار كاملة العرض)
             nav_items = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
             active_items = nav_items if st.session_state['username'] == "mohammed.admin" else nav_items[:2]
             
@@ -300,8 +278,10 @@ def app_interface():
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # تحديد الصفحة المطلوب عرضها
+    # 6. تحديد الصفحة التي سيتم عرض محتواها بناءً على الاختيار
     choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
+    
+    # --- هنا يبدأ محتوى الصفحات (if choice == "🔍 التحليل الذكي" ... إلخ) ---
         # هنا يكمل باقي كود استخراج وتحليل البيانات (السطر 263 وما بعده)
     # بقية الكود كما هو...
 
