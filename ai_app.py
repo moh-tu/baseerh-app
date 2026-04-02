@@ -265,60 +265,65 @@ def app_interface():
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
     
+    # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # 2. إدارة حالة القائمة المنسدلة
+    # 2. إدارة حالة القائمة المنسدلة (Overlay)
     if 'menu_active' not in st.session_state:
         st.session_state.menu_active = False
 
-    # 3. الهيدر الرئيسي (اللوجو والعنوان) - يظهر دائماً في الأعلى
-    st.markdown('<div style="text-align:center; padding-bottom:10px;">', unsafe_allow_html=True)
+    # 3. الهيدر الرئيسي (اللوجو والترحيب)
+    st.markdown('<div style="text-align:center; padding-bottom:15px;">', unsafe_allow_html=True)
     try:
-        st.image("logo1.png.png", width=100) 
+        # تأكد أن اسم ملف اللوجو صحيح تماماً
+        st.image("logo1.png.png", width=110) 
     except:
         pass
-    st.markdown(f"<h3>بصيرة 🔎</h3><p style='color:#007BFF; font-weight:bold;'>أهلاً {st.session_state['username']}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='margin:0; color:white;'>بصيرة 🔎</h2>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#007BFF; font-weight:bold; margin-top:5px;'>أهلاً بك، {st.session_state['username']}</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. زر المنيو (☰) - يظهر بشكل أنيق تحت الهيدر
-    col_menu, _ = st.columns([1, 10])
+    # 4. زر فتح المنيو (يظهر بشكل جانبي وأنيق)
+    col_menu, _ = st.columns([1, 8])
     with col_menu:
-        if st.button("☰ القائمة"):
+        if st.button("☰ القائمة", use_container_width=True):
             st.session_state.menu_active = True
             st.rerun()
 
-    # 5. منطق القائمة العائمة (تظهر كـ Overlay عند النقر على الزر)
+    # 5. منطق القائمة العائمة (Overlay)
     if st.session_state.menu_active:
-        with st.container():
-            # الـ CSS الخاص بـ floating-nav موجود الآن في أعلى الملف فلا تقلق
-            st.markdown('<div class="floating-nav">', unsafe_allow_html=True)
-            
-            if st.button("❌ إغلاق"):
+        # تفعيل الـ CSS اللي حطيناه فوق للكلاس floating-nav
+        st.markdown('<div class="floating-nav">', unsafe_allow_html=True)
+        
+        # زر الإغلاق في أعلى المنيو
+        if st.button("❌ إغلاق القائمة", key="close_overlay", use_container_width=True):
+            st.session_state.menu_active = False
+            st.rerun()
+        
+        st.markdown("<br><h3 style='text-align: center; color: white;'>التنقل السريع</h3>", unsafe_allow_html=True)
+        st.divider()
+        
+        # خيارات التنقل كأزرار احترافية
+        nav_items = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
+        active_items = nav_items if st.session_state['username'] == "mohammed.admin" else nav_items[:2]
+        
+        for item in active_items:
+            if st.button(item, key=f"btn_{item}", use_container_width=True):
+                st.session_state.last_choice = item
                 st.session_state.menu_active = False
                 st.rerun()
+        
+        st.divider()
+        # زر تسجيل الخروج
+        if st.button("🚪 تسجيل الخروج", key="logout_sidebar", use_container_width=True):
+            st.session_state['logged_in'] = False
+            st.rerun()
             
-            st.markdown("<h3 style='text-align: center; color: white;'>القائمة الرئيسية</h3>", unsafe_allow_html=True)
-            st.divider()
-            
-            # خيارات التنقل (أزرار كاملة العرض)
-            nav_items = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
-            active_items = nav_items if st.session_state['username'] == "mohammed.admin" else nav_items[:2]
-            
-            for item in active_items:
-                if st.button(item, key=f"nav_{item}", use_container_width=True):
-                    st.session_state.last_choice = item
-                    st.session_state.menu_active = False
-                    st.rerun()
-            
-            st.divider()
-            if st.button("🚪 تسجيل الخروج", key="final_logout", use_container_width=True):
-                st.session_state['logged_in'] = False
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # 6. تحديد الصفحة التي سيتم عرض محتواها بناءً على الاختيار
+    # 6. تحديد الصفحة النشطة لعرض محتواها
     choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
     
     # --- هنا يبدأ محتوى الصفحات (if choice == "🔍 التحليل الذكي" ... إلخ) ---
