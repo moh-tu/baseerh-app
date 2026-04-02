@@ -243,14 +243,23 @@ def app_interface():
     if 'menu_active' not in st.session_state:
         st.session_state.menu_active = False
 
-    # زر المنيو الوحيد - يظهر في أعلى الصفحة
+    # --- الهيدر الرئيسي (اللوجو والترحيب في أعلى الصفحة) ---
+    st.markdown('<div class="header-box" style="text-align:center;">', unsafe_allow_html=True)
+    try:
+        st.image("logo1.png.png", width=100) # تأكد من وجود الملف بهذا الاسم
+    except:
+        pass
+    st.markdown(f"<h3>بصيرة 🔎</h3><p style='color:#007BFF; font-weight:bold;'>أهلاً {st.session_state['username']}</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # زر المنيو (يظهر أسفل الهيدر أو بجانبه)
     col_menu, _ = st.columns([1, 10])
     with col_menu:
         if st.button("☰ القائمة"):
             st.session_state.menu_active = True
             st.rerun()
 
-    # لوحة القائمة (تظهر فقط كطبقة فوق الصفحة)
+    # لوحة القائمة العائمة (Overlay)
     if st.session_state.menu_active:
         with st.container():
             st.markdown('<div class="floating-nav">', unsafe_allow_html=True)
@@ -259,8 +268,7 @@ def app_interface():
                 st.session_state.menu_active = False
                 st.rerun()
             
-            st.markdown("<h2 style='text-align: center;'>بصيرة 🔎</h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='text-align: center;'>أهلاً {st.session_state['username']}</p>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center;'>القائمة الرئيسية</h3>", unsafe_allow_html=True)
             st.divider()
             
             # خيارات التنقل كأزرار احترافية
@@ -270,7 +278,7 @@ def app_interface():
             for item in active_items:
                 if st.button(item, key=f"nav_{item}", use_container_width=True):
                     st.session_state.last_choice = item
-                    st.session_state.menu_active = False # أغلق المنيو بعد الاختيار
+                    st.session_state.menu_active = False
                     st.rerun()
             
             st.divider()
@@ -407,9 +415,7 @@ def app_interface():
                     st.success(f"✅ تم تحديث بيانات {user[0]} بنجاح!")
                     st.rerun()
 
-    if st.sidebar.button("تسجيل الخروج"):
-        st.session_state['logged_in'] = False
-        st.rerun()
+    
 
 def main():
     if not st.session_state['logged_in']:
