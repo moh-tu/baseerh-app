@@ -195,6 +195,29 @@ def auth_page():
             else:
                 st.warning("الرجاء تعبئة جميع الخانات")
 def app_interface():
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        html, body, [data-testid="stSidebar"], .stApp {
+            font-family: 'Cairo', sans-serif;
+            direction: RTL;
+            text-align: right;
+        }
+        /* حل مشكلة القائمة الجانبية على الجوال */
+        [data-testid="stSidebar"] {
+            min-width: 280px !important;
+        }
+        /* إخفاء الكلمات البرمجية المزعجة */
+        .stTooltipIcon, [data-testid="stTooltipHoverTarget"], 
+        .st-emotion-cache-1vt4lm1, .st-emotion-cache-6q9sum, .st-emotion-cache-1aege4m {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        /* تحسين شكل الأزرار والتبويبات */
+        .stButton button { width: 100%; border-radius: 8px; }
+        .main-title { font-size: 24px !important; text-align: center; color: #007BFF; }
+    </style>
+    """, unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
