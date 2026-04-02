@@ -198,24 +198,53 @@ def app_interface():
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        
+        /* 1. توحيد الخط والاتجاه العام */
         html, body, [data-testid="stSidebar"], .stApp {
             font-family: 'Cairo', sans-serif;
-            direction: RTL;
-            text-align: right;
+            direction: RTL !important;
+            text-align: right !important;
         }
-        /* حل مشكلة القائمة الجانبية على الجوال */
+
+        /* 2. نقل القائمة الجانبية من اليسار إلى اليمين إجبارياً */
         [data-testid="stSidebar"] {
-            min-width: 280px !important;
+            position: fixed;
+            right: 0 !important;
+            left: auto !important;
+            direction: RTL !important;
+            min-width: 300px !important;
         }
-        /* إخفاء الكلمات البرمجية المزعجة */
-        .stTooltipIcon, [data-testid="stTooltipHoverTarget"], 
-        .st-emotion-cache-1vt4lm1, .st-emotion-cache-6q9sum, .st-emotion-cache-1aege4m {
+        [data-testid="stSidebarNav"] {
+            direction: RTL !important;
+            text-align: right !important;
+        }
+
+        /* 3. إزاحة محتوى الصفحة لليسار قليلاً ليعطي مساحة للقائمة اليمينية */
+        section[data-testid="stMain"] {
+            margin-right: 300px;
+            margin-left: 0;
+        }
+
+        /* 4. إخفاء الكلمات البرمجية المزعجة (keyboard, double_arrow) نهائياً */
+        span[data-testid="stHeaderActionElements"], 
+        .stTooltipIcon, 
+        button[kind="header"] {
             display: none !important;
-            visibility: hidden !important;
         }
-        /* تحسين شكل الأزرار والتبويبات */
-        .stButton button { width: 100%; border-radius: 8px; }
-        .main-title { font-size: 24px !important; text-align: center; color: #007BFF; }
+
+        /* 5. تحسين شكل البطاقات والنصوص على الجوال */
+        @media (max-width: 768px) {
+            section[data-testid="stMain"] {
+                margin-right: 0 !important; /* إلغاء الإزاحة في الجوال */
+            }
+            .main-title { font-size: 20px !important; }
+            [data-testid="stSidebar"] { min-width: 80% !important; }
+        }
+
+        /* 6. منع تداخل الأيقونات مع النصوص */
+        .st-emotion-cache-6q9sum, .st-emotion-cache-1vt4lm1 {
+            flex-direction: row-reverse !important;
+        }
     </style>
     """, unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
