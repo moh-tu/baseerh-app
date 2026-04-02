@@ -200,35 +200,29 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 1. إخفاء الشريط العلوي وأي أزرار افتراضية نهائياً */
-        header, [data-testid="stHeader"], button[kind="headerNoContext"] {
-            visibility: hidden !important;
+        /* 1. حذف الشريط العلوي والكلمات البرمجية نهائياً وبدون رحمة */
+        header, [data-testid="stHeader"], .st-emotion-cache-18ni7ve, .st-emotion-cache-z5fcl4 {
             display: none !important;
+            visibility: hidden !important;
             height: 0px !important;
         }
 
-        /* 2. تصميم القائمة الجانبية في جهة اليمين */
+        /* 2. إخفاء أزرار التحكم الافتراضية (الأسهم والنقاط) */
+        button[kind="header"], button[aria-label="open sidebar"] {
+            display: none !important;
+        }
+
+        /* 3. تثبيت القائمة في اليمين ومنع تداخلها */
         [data-testid="stSidebar"] {
             right: 0 !important;
             left: auto !important;
             direction: RTL !important;
-            background-color: #161b22 !important;
             border-left: 1px solid #30363d;
         }
 
-        /* 3. تنسيق زر الـ ☰ المخصص ليكون بارزاً وأنيقاً */
-        .custom-menu-btn {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000001;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 20px;
+        /* 4. تعديل مكان المحتوى الرئيسي للابتوب والجوال */
+        @media (min-width: 992px) {
+            section[data-testid="stMain"] { margin-right: 21rem !important; margin-left: 0 !important; }
         }
     </style>
     """, unsafe_allow_html=True)
@@ -237,51 +231,51 @@ def app_interface():
     u_info = c.fetchone()
     
     # 1. اترك التحقق من البيانات (مهم جداً للأمان)
+    # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # إدارة حالة القائمة
+    # 2. إعداد حالة القائمة الجانبية (Sidebar State)
     if 'sidebar_state' not in st.session_state:
         st.session_state.sidebar_state = False 
 
-    # إنشاء زر مخصص (☰) باستخدام HTML و Streamlit button
-    if st.button("☰ القائمة"): 
-        st.session_state.sidebar_state = not st.session_state.sidebar_state
-        st.rerun()
+    # 3. زر التحكم الرئيسي (☰) يظهر في الصفحة عند إغلاق القائمة
+    if not st.session_state.sidebar_state:
+        if st.button("☰ القائمة الرئيسية"): 
+            st.session_state.sidebar_state = True
+            st.rerun()
 
-    # إذا كانت القائمة مفتوحة
+    # 4. منطق عرض القائمة الجانبية
     if st.session_state.sidebar_state:
         with st.sidebar:
-            if st.button("❌ إغلاق"):
+            # زر الإغلاق داخل القائمة
+            if st.button("❌ إغلاق القائمة"):
                 st.session_state.sidebar_state = False
                 st.rerun()
-                
-            try:
-                st.image("Logo1.png", use_container_width=True)
-            except: pass
             
-            st.markdown(f"<h4 style='text-align: center;'>أهلاً {st.session_state['username']}</h4>", unsafe_allow_html=True)
+            # عرض الشعار والترحيب بالمستخدم
+            st.markdown(f"<h3 style='text-align: center;'>بصيرة 🔎</h3>", unsafe_allow_html=True)
+            st.markdown(f"<p style='text-align: center;'>أهلاً {st.session_state['username']} 👋</p>", unsafe_allow_html=True)
             st.divider()
 
+            # تحديد الخيارات بناءً على نوع الحساب
             menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
             active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
             
-            # الراديو للتنقل
-            choice = st.radio("انتقل إلى:", active_menu, key="main_nav")
+            # عرض القائمة وحفظ الاختيار
+            choice = st.radio("انتقل إلى:", active_menu, key="nav_radio")
             st.session_state.last_choice = choice
 
             st.divider()
-            # زر تسجيل الخروج (مرة واحدة فقط هنا)
+            
+            # زر تسجيل الخروج (الوحيد في التطبيق)
             if st.button("🚪 تسجيل الخروج", use_container_width=True):
                 st.session_state['logged_in'] = False
                 st.rerun()
     else:
-        # القائمة مغلقة: نعتمد آخر خيار تم اختياره
-        if 'last_choice' not in st.session_state: 
-            st.session_state.last_choice = "🔍 التحليل الذكي"
-        choice = st.session_state.last_choice
-
+        # إذا كانت القائمة مغلقة، نستخدم آخر خيار تم اختياره أو الخيار الافتراضي
+        choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
     # بقية الكود كما هو...
 
     if choice == "🔍 التحليل الذكي":
