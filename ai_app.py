@@ -200,54 +200,40 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 1. نسف الهيدر القديم تماماً ومسحه من الذاكرة */
-        header, [data-testid="stHeader"] {
+        /* 1. إخفاء الهيدر تماماً */
+        header, [data-testid="stHeader"] { display: none !important; }
+
+        /* 2. تنظيف داخل القائمة الجانبية (الهدف المطلوب) */
+        /* إخفاء أي أزرار أو نصوص برمجية تظهر في أعلى السايدبار */
+        [data-testid="stSidebar"] button {
+            border: none !important;
+            background: transparent !important;
+        }
+        
+        /* إخفاء أيقونات الأسهم والكلمات المزعجة داخل السايدبار */
+        [data-testid="stSidebar"] [data-testid="stSidebarNav"], 
+        [data-testid="stSidebar"] svg, 
+        [data-testid="stSidebar"] .st-emotion-cache-fblp2m  {
             display: none !important;
-            visibility: hidden !important;
-            height: 0px !important;
-            opacity: 0 !important;
         }
 
-        /* 2. صنع شريط علوي جديد (Custom Top Bar) يغطي الشريط القديم */
-        .custom-top-bar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 60px;
-            background-color: #161b22; /* لون داكن احترافي */
-            border-bottom: 1px solid #30363d;
-            z-index: 999999; /* طبقة عالية جداً فوق كل شيء */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
+        /* إخفاء الفراغ العلوي المخصص للأزرار الافتراضية داخل السايدبار */
+        [data-testid="stSidebar"] .st-emotion-cache-6q9sum,
+        [data-testid="stSidebar"] .st-emotion-cache-18ni7ve {
+            display: none !important;
         }
 
-        /* 3. تنسيق اللوجو في الشريط الجديد */
-        .top-bar-logo {
-            height: 40px;
-        }
-
-        /* 4. إجبار القائمة الجانبية على اليمين وتعديل ارتفاعها */
+        /* 3. تثبيت القائمة في اليمين */
         [data-testid="stSidebar"] {
             right: 0 !important;
             left: auto !important;
-            top: 60px !important; /* تبدأ بعد الشريط الجديد */
-            height: calc(100vh - 60px) !important;
+            direction: RTL !important;
             border-left: 1px solid #30363d;
-            z-index: 999998;
         }
-
-        /* 5. تعديل مكأن المحتوى الرئيسي لكي لا يختفي تحت الشريط */
-        .stApp { margin-top: 60px !important; }
-
-        /* 6. تنسيق الزر ☰ ليكون جزءاً من الشريط الجديد */
-        button[kind="secondary"] {
-            background-color: transparent !important;
-            border: none !important;
-            color: white !important;
-            font-size: 24px !important;
+        
+        /* 4. تعديل زر الإغلاق والفتح ليصبح نظيفاً */
+        .stButton button {
+            border-radius: 8px !important;
         }
     </style>
     """, unsafe_allow_html=True)
