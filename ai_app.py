@@ -199,51 +199,64 @@ def app_interface():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         
-        /* 1. توحيد الخط والاتجاه العام */
+        /* 1. القاعدة الأساسية: كل شيء من اليمين لليسار */
         html, body, [data-testid="stSidebar"], .stApp {
             font-family: 'Cairo', sans-serif;
             direction: RTL !important;
             text-align: right !important;
         }
 
-        /* 2. نقل القائمة الجانبية من اليسار إلى اليمين إجبارياً */
+        /* 2. نقل القائمة الجانبية لليمين وإصلاح مكانها */
         [data-testid="stSidebar"] {
             position: fixed;
             right: 0 !important;
             left: auto !important;
-            direction: RTL !important;
-            min-width: 300px !important;
-        }
-        [data-testid="stSidebarNav"] {
-            direction: RTL !important;
-            text-align: right !important;
+            border-left: 1px solid #30363d;
+            border-right: none !important;
+            z-index: 999991;
         }
 
-        /* 3. إزاحة محتوى الصفحة لليسار قليلاً ليعطي مساحة للقائمة اليمينية */
-        section[data-testid="stMain"] {
-            margin-right: 300px;
-            margin-left: 0;
+        /* 3. إزاحة المحتوى الرئيسي ليتناسب مع القائمة اليمنى (للكمبيوتر فقط) */
+        @media (min-width: 768px) {
+            [data-testid="stMain"] {
+                margin-right: 21rem !important;
+                margin-left: 0 !important;
+            }
         }
 
-        /* 4. إخفاء الكلمات البرمجية المزعجة (keyboard, double_arrow) نهائياً */
-        span[data-testid="stHeaderActionElements"], 
-        .stTooltipIcon, 
+        /* 4. إخفاء الرموز المزعجة وأي نصوص برمجية تظهر في الرأس */
+        [data-testid="stHeader"], header {
+            background-color: rgba(0,0,0,0) !important;
+        }
         button[kind="header"] {
             display: none !important;
         }
-
-        /* 5. تحسين شكل البطاقات والنصوص على الجوال */
-        @media (max-width: 768px) {
-            section[data-testid="stMain"] {
-                margin-right: 0 !important; /* إلغاء الإزاحة في الجوال */
-            }
-            .main-title { font-size: 20px !important; }
-            [data-testid="stSidebar"] { min-width: 80% !important; }
+        /* إخفاء نصوص الـ Tooltip والكلمات المتداخلة */
+        .stTooltipIcon, [data-testid="stHeaderActionElements"], .st-emotion-cache-6q9sum {
+            display: none !important;
         }
 
-        /* 6. منع تداخل الأيقونات مع النصوص */
-        .st-emotion-cache-6q9sum, .st-emotion-cache-1vt4lm1 {
-            flex-direction: row-reverse !important;
+        /* 5. إصلاح شكل القائمة على الجوال لمنع تكسر الكلمات */
+        [data-testid="stSidebarNav"] {
+            padding-top: 2rem !important;
+        }
+        [data-testid="stSidebarNavItems"] {
+            padding-right: 10px !important;
+        }
+
+        /* 6. تحسين شكل التبويبات (Tabs) لتكون واضحة */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 10px;
+            direction: RTL;
+        }
+        .stTabs [data-baseweb="tab"] {
+            border-radius: 10px 10px 0 0;
+            padding: 10px 20px;
+        }
+
+        /* منع أي محتوى من الخروج عن حدود الشاشة */
+        .stApp {
+            overflow-x: hidden;
         }
     </style>
     """, unsafe_allow_html=True)
