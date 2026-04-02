@@ -200,29 +200,54 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 1. حذف الشريط العلوي والكلمات البرمجية نهائياً وبدون رحمة */
-        header, [data-testid="stHeader"], .st-emotion-cache-18ni7ve, .st-emotion-cache-z5fcl4 {
+        /* 1. نسف الهيدر القديم تماماً ومسحه من الذاكرة */
+        header, [data-testid="stHeader"] {
             display: none !important;
             visibility: hidden !important;
             height: 0px !important;
+            opacity: 0 !important;
         }
 
-        /* 2. إخفاء أزرار التحكم الافتراضية (الأسهم والنقاط) */
-        button[kind="header"], button[aria-label="open sidebar"] {
-            display: none !important;
+        /* 2. صنع شريط علوي جديد (Custom Top Bar) يغطي الشريط القديم */
+        .custom-top-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #161b22; /* لون داكن احترافي */
+            border-bottom: 1px solid #30363d;
+            z-index: 999999; /* طبقة عالية جداً فوق كل شيء */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
         }
 
-        /* 3. تثبيت القائمة في اليمين ومنع تداخلها */
+        /* 3. تنسيق اللوجو في الشريط الجديد */
+        .top-bar-logo {
+            height: 40px;
+        }
+
+        /* 4. إجبار القائمة الجانبية على اليمين وتعديل ارتفاعها */
         [data-testid="stSidebar"] {
             right: 0 !important;
             left: auto !important;
-            direction: RTL !important;
+            top: 60px !important; /* تبدأ بعد الشريط الجديد */
+            height: calc(100vh - 60px) !important;
             border-left: 1px solid #30363d;
+            z-index: 999998;
         }
 
-        /* 4. تعديل مكان المحتوى الرئيسي للابتوب والجوال */
-        @media (min-width: 992px) {
-            section[data-testid="stMain"] { margin-right: 21rem !important; margin-left: 0 !important; }
+        /* 5. تعديل مكأن المحتوى الرئيسي لكي لا يختفي تحت الشريط */
+        .stApp { margin-top: 60px !important; }
+
+        /* 6. تنسيق الزر ☰ ليكون جزءاً من الشريط الجديد */
+        button[kind="secondary"] {
+            background-color: transparent !important;
+            border: none !important;
+            color: white !important;
+            font-size: 24px !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -232,49 +257,52 @@ def app_interface():
     
     # 1. اترك التحقق من البيانات (مهم جداً للأمان)
     # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
+    # التحقق من البيانات
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # 2. إعداد حالة القائمة الجانبية (Sidebar State)
+    # إدارة حالة القائمة
     if 'sidebar_state' not in st.session_state:
         st.session_state.sidebar_state = False 
 
-    # 3. زر التحكم الرئيسي (☰) يظهر في الصفحة عند إغلاق القائمة
-    if not st.session_state.sidebar_state:
-        if st.button("☰ القائمة الرئيسية"): 
-            st.session_state.sidebar_state = True
+    # --- حقن الشريط العلوي الجديد باستخدام HTML ---
+    st.markdown(f"""
+    <div class="custom-top-bar">
+        <img src="https://raw.githubusercontent.com/mohamedm74/baseerh-app/main/logo1.png.png" class="top-bar-logo">
+        <div style="color: white; font-size: 1.2rem; font-weight: bold;">بصيرة</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # زر واحد فقط في أعلى اليمين للتحكم، نضعه في كولوم صغير
+    col_btn, _ = st.columns([1, 12])
+    with col_btn:
+        if st.button("☰"): 
+            st.session_state.sidebar_state = not st.session_state.sidebar_state
             st.rerun()
 
-    # 4. منطق عرض القائمة الجانبية
+    # محتوى القائمة الجانبية
     if st.session_state.sidebar_state:
         with st.sidebar:
-            # زر الإغلاق داخل القائمة
-            if st.button("❌ إغلاق القائمة"):
+            if st.button("❌ إغلاق"):
                 st.session_state.sidebar_state = False
                 st.rerun()
             
-            # عرض الشعار والترحيب بالمستخدم
-            st.markdown(f"<h3 style='text-align: center;'>بصيرة 🔎</h3>", unsafe_allow_html=True)
-            st.markdown(f"<p style='text-align: center;'>أهلاً {st.session_state['username']} 👋</p>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='text-align: center;'>أهلاً {st.session_state['username']}</h4>", unsafe_allow_html=True)
             st.divider()
 
-            # تحديد الخيارات بناءً على نوع الحساب
+            # القائمة (الراديو الوحيد)
             menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
             active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
-            
-            # عرض القائمة وحفظ الاختيار
             choice = st.radio("انتقل إلى:", active_menu, key="nav_radio")
             st.session_state.last_choice = choice
 
             st.divider()
-            
-            # زر تسجيل الخروج (الوحيد في التطبيق)
+            # زر تسجيل الخروج الوحيد
             if st.button("🚪 تسجيل الخروج", use_container_width=True):
                 st.session_state['logged_in'] = False
                 st.rerun()
     else:
-        # إذا كانت القائمة مغلقة، نستخدم آخر خيار تم اختياره أو الخيار الافتراضي
         choice = st.session_state.get('last_choice', "🔍 التحليل الذكي")
     # بقية الكود كما هو...
 
