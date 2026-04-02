@@ -197,60 +197,48 @@ def auth_page():
 def app_interface():
     st.markdown("""
     <style>
-        /* 1. الخط والاتجاه العام */
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* 2. إخفاء الرموز المزعجة (الحل الجذري) */
+        /* إخفاء الهيدر المزعج */
         header { visibility: hidden !important; height: 0px !important; }
-        .stDeployButton, #MainMenu { display: none !important; }
 
-        /* 3. تعديل القائمة الجانبية (Sidebar) لليمين */
+        /* القائمة الجانبية: يمين وتصميم عصري */
         [data-testid="stSidebar"] {
-            position: fixed;
             right: 0 !important;
             left: auto !important;
             direction: RTL !important;
-            text-align: right !important;
+            background-color: #161b22 !important;
             border-left: 1px solid #30363d;
+            transition: all 0.3s ease;
         }
 
-        /* 4. التحكم في العرض حسب نوع الجهاز (الذكاء هنا) */
-        
-        /* --- أجهزة اللابتوب (الشاشات الكبيرة) --- */
-        @media (min-width: 992px) {
-            [data-testid="stSidebar"] { width: 300px !important; }
-            [data-testid="stMain"] { margin-right: 300px !important; margin-left: 0 !important; }
+        /* تعديل مكان محتوى الصفحة بناءً على حالة القائمة */
+        [data-testid="stMain"] {
+            margin-right: 0 !important;
+            transition: all 0.3s ease;
         }
 
-        /* --- أجهزة الجوال (الشاشات الصغيرة) --- */
-        @media (max-width: 991px) {
-            [data-testid="stSidebar"] { 
-                width: 70% !important; /* تصغير عرض القائمة الجانبية لتناسب شاشة الجوال */
-                min-width: 250px !important;
+        /* تنسيق زر الإغلاق/الفتح الافتراضي ليكون واضحاً في اليمين */
+        button[kind="headerNoContext"] {
+            display: flex !important;
+            position: fixed;
+            right: 10px;
+            top: 10px;
+            z-index: 999999;
+            background-color: #007BFF !important;
+            color: white !important;
+            border-radius: 50% !important;
+        }
+
+        /* تحسين الجوال: جعل القائمة "عائمة" فوق المحتوى */
+        @media (max-width: 768px) {
+            [data-testid="stSidebar"] {
+                width: 280px !important;
+                z-index: 1000000;
             }
-            [data-testid="stMain"] { 
-                margin-right: 0 !important; 
-                padding: 10px !important; /* تقليل الحواف الجانبية في الجوال */
-            }
-            .main-title { font-size: 18px !important; } /* تصغير العنوان لكي لا ينكسر */
-            .stTabs [data-baseweb="tab"] { font-size: 12px !important; padding: 5px !important; } /* تصغير التبويبات */
-            
-            /* إخفاء القائمة الجانبية في الجوال حتى يفتحها المستخدم */
-            [data-testid="stSidebar"][aria-expanded="false"] {
-                margin-right: -350px !important;
-            }
+            .main-title { font-size: 18px !important; }
         }
-
-        /* 5. منع تداخل النصوص والكلمات المكسورة */
-        .st-emotion-cache-1aege4m, .st-emotion-cache-1vt4lm1 {
-            overflow: hidden !important;
-            white-space: nowrap !important;
-            text-overflow: ellipsis !important;
-        }
-
-        /* 6. تحسين شكل الأزرار في الجوال لسهولة النقر */
-        .stButton button { width: 100% !important; border-radius: 10px !important; }
     </style>
     """, unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
