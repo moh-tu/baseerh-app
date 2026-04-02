@@ -197,66 +197,51 @@ def auth_page():
 def app_interface():
     st.markdown("""
     <style>
+        /* 1. الخط والاتجاه */
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        * { font-family: 'Cairo', sans-serif; }
         
-        /* 1. القاعدة الأساسية: كل شيء من اليمين لليسار */
-        html, body, [data-testid="stSidebar"], .stApp {
-            font-family: 'Cairo', sans-serif;
+        /* 2. إخفاء الرأس (Header) بالكامل لإزالة كلمات keyboard و double_arrow */
+        header[data-testid="stHeader"] {
+            display: none !important;
+        }
+
+        /* 3. إجبار الصفحة على البدء من اليمين */
+        .stApp {
             direction: RTL !important;
             text-align: right !important;
         }
 
-        /* 2. نقل القائمة الجانبية لليمين وإصلاح مكانها */
+        /* 4. معالجة القائمة الجانبية (Sidebar) */
         [data-testid="stSidebar"] {
-            position: fixed;
-            right: 0 !important;
-            left: auto !important;
-            border-left: 1px solid #30363d;
-            border-right: none !important;
-            z-index: 999991;
+            direction: RTL !important;
+            text-align: right !important;
         }
 
-        /* 3. إزاحة المحتوى الرئيسي ليتناسب مع القائمة اليمنى (للكمبيوتر فقط) */
-        @media (min-width: 768px) {
-            [data-testid="stMain"] {
-                margin-right: 21rem !important;
-                margin-left: 0 !important;
-            }
+        /* 5. إصلاح مشكلة التداخل في اللابتوب والجوال */
+        /* إلغاء أي إزاحات غريبة وإعطاء مساحة عرض كاملة */
+        [data-testid="stSidebar"] {
+            min-width: 280px !important;
+            max-width: 300px !important;
         }
 
-        /* 4. إخفاء الرموز المزعجة وأي نصوص برمجية تظهر في الرأس */
-        [data-testid="stHeader"], header {
-            background-color: rgba(0,0,0,0) !important;
+        /* 6. تحسين شكل الأزرار والقوائم */
+        .stSelectbox div[data-baseweb="select"] {
+            direction: RTL !important;
         }
-        button[kind="header"] {
-            display: none !important;
-        }
-        /* إخفاء نصوص الـ Tooltip والكلمات المتداخلة */
-        .stTooltipIcon, [data-testid="stHeaderActionElements"], .st-emotion-cache-6q9sum {
+        
+        /* إخفاء أيقونة المساعدة وأي أزرار إضافية تسبب زحمة */
+        .stDeployButton, #MainMenu {
             display: none !important;
         }
 
-        /* 5. إصلاح شكل القائمة على الجوال لمنع تكسر الكلمات */
-        [data-testid="stSidebarNav"] {
-            padding-top: 2rem !important;
-        }
-        [data-testid="stSidebarNavItems"] {
-            padding-right: 10px !important;
-        }
-
-        /* 6. تحسين شكل التبويبات (Tabs) لتكون واضحة */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 10px;
-            direction: RTL;
-        }
-        .stTabs [data-baseweb="tab"] {
-            border-radius: 10px 10px 0 0;
-            padding: 10px 20px;
-        }
-
-        /* منع أي محتوى من الخروج عن حدود الشاشة */
-        .stApp {
-            overflow-x: hidden;
+        /* 7. لمسة جمالية للبطاقات */
+        .result-card {
+            background-color: #1e2329;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            margin-bottom: 15px;
         }
     </style>
     """, unsafe_allow_html=True)
