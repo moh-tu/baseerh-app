@@ -196,55 +196,76 @@ def auth_page():
                 st.warning("الرجاء تعبئة جميع الخانات")
 def app_interface():
     st.markdown("""
-    <style>
-        /* 1. الخط والاتجاه */
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-        * { font-family: 'Cairo', sans-serif; }
-        
-        /* 2. إخفاء الرأس (Header) بالكامل لإزالة كلمات keyboard و double_arrow */
-        header[data-testid="stHeader"] {
-            display: none !important;
-        }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
 
-        /* 3. إجبار الصفحة على البدء من اليمين */
-        .stApp {
-            direction: RTL !important;
-            text-align: right !important;
-        }
+/* الخط */
+* { 
+    font-family: 'Cairo', sans-serif; 
+}
 
-        /* 4. معالجة القائمة الجانبية (Sidebar) */
-        [data-testid="stSidebar"] {
-            direction: RTL !important;
-            text-align: right !important;
-        }
+/* إخفاء الهيدر */
+header[data-testid="stHeader"] {
+    display: none !important;
+}
 
-        /* 5. إصلاح مشكلة التداخل في اللابتوب والجوال */
-        /* إلغاء أي إزاحات غريبة وإعطاء مساحة عرض كاملة */
-        [data-testid="stSidebar"] {
-            min-width: 280px !important;
-            max-width: 300px !important;
-        }
+/* الاتجاه */
+.stApp {
+    direction: rtl;
+    text-align: right;
+}
 
-        /* 6. تحسين شكل الأزرار والقوائم */
-        .stSelectbox div[data-baseweb="select"] {
-            direction: RTL !important;
-        }
-        
-        /* إخفاء أيقونة المساعدة وأي أزرار إضافية تسبب زحمة */
-        .stDeployButton, #MainMenu {
-            display: none !important;
-        }
+/* Sidebar طبيعي */
+[data-testid="stSidebar"] {
+    direction: rtl;
+    text-align: right;
+}
 
-        /* 7. لمسة جمالية للبطاقات */
-        .result-card {
-            background-color: #1e2329;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            margin-bottom: 15px;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+/* ✨ أهم شي: إصلاح الجوال */
+@media (max-width: 768px) {
+
+    /* خلي السايدبار يختفي طبيعي */
+    [data-testid="stSidebar"] {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* النصوص ما تطلع برا */
+    .block-container {
+        padding: 1rem !important;
+    }
+
+    /* تصغير الخط شوي */
+    html, body {
+        font-size: 14px;
+    }
+
+    /* إصلاح الأزرار */
+    button {
+        width: 100% !important;
+    }
+}
+
+/* selectbox */
+.stSelectbox div[data-baseweb="select"] {
+    direction: rtl;
+}
+
+/* إخفاء أزرار مزعجة */
+#MainMenu, .stDeployButton {
+    display: none !important;
+}
+
+/* كرت النتائج */
+.result-card {
+    background-color: #1e2329;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #30363d;
+    margin-bottom: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
