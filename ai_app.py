@@ -200,76 +200,72 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* إخفاء الهيدر المزعج */
-        header { visibility: hidden !important; height: 0px !important; }
-
-        /* القائمة الجانبية: يمين وتصميم عصري */
+        /* إخفاء الهيدر والقائمة الجانبية الافتراضية تماماً */
+        header, [data-testid="stHeader"] { visibility: hidden !important; height: 0px !important; }
+        
+        /* تصميم القائمة الجانبية عندما تكون "مفتوحة" */
         [data-testid="stSidebar"] {
             right: 0 !important;
             left: auto !important;
             direction: RTL !important;
             background-color: #161b22 !important;
             border-left: 1px solid #30363d;
-            transition: all 0.3s ease;
+            z-index: 1000000;
         }
 
-        /* تعديل مكان محتوى الصفحة بناءً على حالة القائمة */
-        [data-testid="stMain"] {
-            margin-right: 0 !important;
-            transition: all 0.3s ease;
-        }
-
-        /* تنسيق زر الإغلاق/الفتح الافتراضي ليكون واضحاً في اليمين */
-        button[kind="headerNoContext"] {
-            display: flex !important;
-            position: fixed;
-            right: 10px;
-            top: 10px;
-            z-index: 999999;
-            background-color: #007BFF !important;
-            color: white !important;
-            border-radius: 50% !important;
-        }
-
-        /* تحسين الجوال: جعل القائمة "عائمة" فوق المحتوى */
-        @media (max-width: 768px) {
-            [data-testid="stSidebar"] {
-                width: 280px !important;
-                z-index: 1000000;
-            }
-            .main-title { font-size: 18px !important; }
-        }
+        /* التحكم في ظهور القائمة بناءً على شرط برمج سيأتي لاحقاً */
+        .st-emotion-cache-6q9sum { display: none !important; } 
     </style>
     """, unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
     c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
     u_info = c.fetchone()
     
-    # 1. اترك هذا الجزء كما هو (للأمان)
+    # 1. اترك التحقق من البيانات (مهم جداً للأمان)
     if not u_info:
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # 2. الآن استبدل كل ما بعده بهذا الكود المحدث
-    with st.sidebar:
-        try:
-            st.image("Logo1.png", use_container_width=True)
-        except:
-            pass
-            
-        st.markdown(f"<h3 style='text-align: center; color: white;'>أهلاً {st.session_state['username']} 👋</h3>", unsafe_allow_html=True)
-        st.divider()
+    # 2. بداية منطق الزر والقائمة المخفية
+    if 'sidebar_state' not in st.session_state:
+        st.session_state.sidebar_state = 'collapsed' 
 
-        menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
-        active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
-        
-        choice = st.radio("القائمة الرئيسية:", active_menu)
-
-        st.divider()
-        
-        if st.button("🚪 تسجيل الخروج", use_container_width=True):
-            st.session_state['logged_in'] = False
+    # إنشاء زر الـ (☰) في أعلى الصفحة
+    col_btn, _ = st.columns([1, 10])
+    with col_btn:
+        if st.button("☰"): 
+            st.session_state.sidebar_state = 'expanded' if st.session_state.sidebar_state == 'collapsed' else 'collapsed'
             st.rerun()
+
+    # تطبيق حالة القائمة
+    if st.session_state.sidebar_state == 'expanded':
+        with st.sidebar:
+            if st.button("❌ إغلاق القائمة"):
+                st.session_state.sidebar_state = 'collapsed'
+                st.rerun()
+                
+            try:
+                st.image("Logo1.png", use_container_width=True)
+            except: pass
+            
+            st.markdown(f"<h3 style='text-align: center;'>أهلاً {st.session_state['username']}</h3>", unsafe_allow_html=True)
+            st.divider()
+
+            menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
+            active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
+            choice = st.radio("القائمة:", active_menu)
+            
+            # حفظ الاختيار الحالي لكي لا يضيع عند إغلاق القائمة
+            st.session_state.last_choice = choice
+
+            if st.button("🚪 تسجيل الخروج", use_container_width=True):
+                st.session_state['logged_in'] = False
+                st.rerun()
+    else:
+        # إذا القائمة مخفية، نستخدم آخر خيار تم اختياره
+        if 'last_choice' not in st.session_state: 
+            st.session_state.last_choice = "🔍 التحليل الذكي"
+        choice = st.session_state.last_choice
 
     # بقية الكود كما هو...
 
