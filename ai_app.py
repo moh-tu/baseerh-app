@@ -10,39 +10,79 @@ import smtplib
 import random
 from email.mime.text import MIMEText
 
-st.set_page_config(page_title="خبير المناقصات | بصيرة", layout="wide")
+st.set_page_config(page_title="بصيرة | خبير المناقصات", layout="wide")
 
-# هذا الكود "يقتل" السايدبار في كل الصفحات (الدخول والتطبيق)
 st.markdown("""
 <style>
+    /* 1. استيراد الخط وتنسيق النص العام */
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    * { font-family: 'Cairo', sans-serif; direction: RTL; }
-
-    /* إخفاء السايدبار والهيدر الافتراضي */
-    section[data-testid="stSidebar"], 
-    div[data-testid="stSidebarNav"],
-    header[data-testid="stHeader"] {
-        display: none !important;
-        width: 0px !important;
+    
+    html, body, [class*="st-"] {
+        font-family: 'Cairo', sans-serif;
+        direction: RTL;
+        text-align: right;
     }
 
-    /* توسيع المحتوى ليأخذ كامل عرض الشاشة */
+    /* 2. الإخفاء المطلق للسايدبار والهيدر الافتراضي */
+    section[data-testid="stSidebar"], 
+    div[data-testid="stSidebarNav"],
+    header[data-testid="stHeader"],
+    .st-emotion-cache-6q9sum,
+    .st-emotion-cache-16idsys {
+        display: none !important;
+        width: 0px !important;
+        position: fixed !important;
+        left: -1000px !important;
+    }
+
+    /* 3. إلغاء الهوامش وإجبار المحتوى على أخذ كامل العرض */
     .main .block-container {
         max-width: 100% !important;
-        padding: 1rem 2rem !important;
+        width: 100% !important;
+        padding: 2rem 5% !important;
         margin: 0px !important;
     }
 
-    /* تنسيق المنيو العائمة */
+    /* 4. تصميم القائمة العائمة (تظهر فوق كل شيء) */
     .floating-nav {
         position: fixed;
-        top: 0; right: 0;
-        width: 300px; height: 100%;
+        top: 0;
+        right: 0;
+        width: 350px; /* عرض القائمة */
+        height: 100vh;
         background-color: #161b22;
-        z-index: 10000;
-        padding: 40px 20px;
-        border-left: 1px solid #30363d;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.7);
+        z-index: 999999 !important; /* لضمان ظهورها فوق المحتوى */
+        padding: 50px 25px;
+        border-left: 2px solid #30363d;
+        box-shadow: -15px 0 40px rgba(0,0,0,0.8);
+        overflow-y: auto;
+    }
+
+    /* 5. تنسيق كروت النتائج والتبويبات */
+    .result-card {
+        background: #1c2128;
+        border-radius: 12px;
+        border: 1px solid #30363d;
+        padding: 25px;
+        margin-top: 15px;
+        border-right: 6px solid #007BFF;
+        color: #adbac7;
+    }
+
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #1c2128;
+        border-radius: 8px 8px 0 0;
+        padding: 10px 20px;
+        color: white;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #007BFF !important;
+    }
+
+    /* تحسين شكل الأزرار داخل القائمة */
+    .floating-nav button {
+        margin-bottom: 10px !important;
     }
 </style>
 """, unsafe_allow_html=True)
