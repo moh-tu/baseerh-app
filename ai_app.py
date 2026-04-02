@@ -200,21 +200,36 @@ def app_interface():
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         * { font-family: 'Cairo', sans-serif; direction: RTL; }
 
-        /* إخفاء الهيدر والقائمة الجانبية الافتراضية تماماً */
-        header, [data-testid="stHeader"] { visibility: hidden !important; height: 0px !important; }
-        
-        /* تصميم القائمة الجانبية عندما تكون "مفتوحة" */
+        /* 1. إخفاء الشريط العلوي وأي أزرار افتراضية نهائياً */
+        header, [data-testid="stHeader"], button[kind="headerNoContext"] {
+            visibility: hidden !important;
+            display: none !important;
+            height: 0px !important;
+        }
+
+        /* 2. تصميم القائمة الجانبية في جهة اليمين */
         [data-testid="stSidebar"] {
             right: 0 !important;
             left: auto !important;
             direction: RTL !important;
             background-color: #161b22 !important;
             border-left: 1px solid #30363d;
-            z-index: 1000000;
         }
 
-        /* التحكم في ظهور القائمة بناءً على شرط برمج سيأتي لاحقاً */
-        .st-emotion-cache-6q9sum { display: none !important; } 
+        /* 3. تنسيق زر الـ ☰ المخصص ليكون بارزاً وأنيقاً */
+        .custom-menu-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000001;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
     </style>
     """, unsafe_allow_html=True)
     # التصحيح هنا: نستخدم username لجلب البيانات من جدول users
@@ -226,43 +241,43 @@ def app_interface():
         st.error("تعذر جلب بيانات المستخدم.")
         return
 
-    # 2. بداية منطق الزر والقائمة المخفية
+    # إدارة حالة القائمة
     if 'sidebar_state' not in st.session_state:
-        st.session_state.sidebar_state = 'collapsed' 
+        st.session_state.sidebar_state = False 
 
-    # إنشاء زر الـ (☰) في أعلى الصفحة
-    col_btn, _ = st.columns([1, 10])
-    with col_btn:
-        if st.button("☰"): 
-            st.session_state.sidebar_state = 'expanded' if st.session_state.sidebar_state == 'collapsed' else 'collapsed'
-            st.rerun()
+    # إنشاء زر مخصص (☰) باستخدام HTML و Streamlit button
+    if st.button("☰ القائمة"): 
+        st.session_state.sidebar_state = not st.session_state.sidebar_state
+        st.rerun()
 
-    # تطبيق حالة القائمة
-    if st.session_state.sidebar_state == 'expanded':
+    # إذا كانت القائمة مفتوحة
+    if st.session_state.sidebar_state:
         with st.sidebar:
-            if st.button("❌ إغلاق القائمة"):
-                st.session_state.sidebar_state = 'collapsed'
+            if st.button("❌ إغلاق"):
+                st.session_state.sidebar_state = False
                 st.rerun()
                 
             try:
                 st.image("Logo1.png", use_container_width=True)
             except: pass
             
-            st.markdown(f"<h3 style='text-align: center;'>أهلاً {st.session_state['username']}</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='text-align: center;'>أهلاً {st.session_state['username']}</h4>", unsafe_allow_html=True)
             st.divider()
 
             menu = ["🔍 التحليل الذكي", "💳 باقتي", "⚙️ الإدارة"]
             active_menu = menu if st.session_state['username'] == "mohammed.admin" else menu[:2]
-            choice = st.radio("القائمة:", active_menu)
             
-            # حفظ الاختيار الحالي لكي لا يضيع عند إغلاق القائمة
+            # الراديو للتنقل
+            choice = st.radio("انتقل إلى:", active_menu, key="main_nav")
             st.session_state.last_choice = choice
 
+            st.divider()
+            # زر تسجيل الخروج (مرة واحدة فقط هنا)
             if st.button("🚪 تسجيل الخروج", use_container_width=True):
                 st.session_state['logged_in'] = False
                 st.rerun()
     else:
-        # إذا القائمة مخفية، نستخدم آخر خيار تم اختياره
+        # القائمة مغلقة: نعتمد آخر خيار تم اختياره
         if 'last_choice' not in st.session_state: 
             st.session_state.last_choice = "🔍 التحليل الذكي"
         choice = st.session_state.last_choice
