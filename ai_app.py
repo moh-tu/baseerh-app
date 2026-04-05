@@ -9,6 +9,13 @@ from PIL import Image
 import smtplib
 import random
 from email.mime.text import MIMEText
+from PIL import Image
+
+def process_image_for_api(uploaded_file):
+    img = Image.open(uploaded_file)
+    # تصغير الصورة للحفاظ على الذاكرة وضمان قبول الـ API
+    img.thumbnail((1600, 1600)) 
+    return img
 
 st.set_page_config(page_title="بصيرة | خبير المناقصات", layout="wide")
 
