@@ -9,6 +9,37 @@ from PIL import Image
 import smtplib
 import random
 from email.mime.text import MIMEText
+from supabase import create_client, Client
+import streamlit as st
+
+# بيانات الربط (يفضل وضعها في Secrets في Streamlit Cloud)
+url: str = "https://rxlwoorwqipwbcynhcdc.supabase.co"
+key: str = "sb_publishable_-hFCSUqslEunNux3rX-Jvg_6aZdsJMx"
+supabase: Client = create_client(url, key)
+
+# --- دالة للتحقق من المستخدم (بديلة لـ SQLite) ---
+def login_user_supabase(username, password):
+    # تشفير الباسورد للمقارنة (تأكد أن دالة make_hashes موجودة)
+    hashed_pw = make_hashes(password)
+    response = supabase.table("users").select("*").eq("username", username).eq("password", hashed_pw).execute()
+    return response.data
+
+# --- دالة لإضافة مستخدم جديد ---
+def add_user_supabase(username, email, password):
+    hashed_pw = make_hashes(password)
+    data = {
+        "username": username,
+        "email": email,
+        "password": hashed_pw,
+        "is_paid": False,
+        "daily_limit": 5
+    }
+    response = supabase.table("users").insert(data).execute()
+    return response
+
+# --- دالة لتحديث عدد الاستخدامات ---
+def update_usage_supabase(username, new_count):
+    supabase.table("users").update({"usages_today": new_count}).eq("username", username).execute()
 
 
 def process_image_for_api(uploaded_file):
@@ -182,8 +213,9 @@ def process_selection(selected, u_info, model, key_suffix):
                 res = get_rag_response(q, all_context, st.session_state.get('media_files', []), model)
                 st.markdown(f"<div class='result-card'>{res}</div>", unsafe_allow_html=True)
                 
-                c.execute('UPDATE users SET usages_today = usages_today + 1 WHERE username=?', (st.session_state['username'],))
-                conn.commit()
+                # زيادة الاستهلاك بمقدار 1 في Supabase
+                current_usage = u_info[3] # u_info[3] هو usages_today
+                supabase.table("users").update({"usages_today": current_usage + 1}).eq("username", st.session_state['username']).execute()
         else:
             st.error("🚫 عذراً، لقد انتهت محاولاتك لليوم.")
 
@@ -225,9 +257,9 @@ def auth_page():
         if st.button("تأكيد الدخول"):
             # التحقق من الرمز أولاً
             if 'verification_code' in st.session_state and input_code == st.session_state['verification_code']:
-                # التحقق من قاعدة البيانات
-                c.execute('SELECT * FROM users WHERE username =? AND password =?', (u, make_hashes(p)))
-                data = c.fetchone()
+                # البحث عن المستخدم في Supabase
+                res = supabase.table("users").select("*").eq("username", u).eq("password", make_hashes(p)).execute()
+                data = res.data[0] if res.data else None # 
                 if data:
                     st.session_state['logged_in'] = True
                     st.session_state['username'] = data[0]
@@ -247,10 +279,13 @@ def auth_page():
             if ne and nu and np:
                 try:
                     # إضافة المستخدم الجديد مع القيم الافتراضية
-                    c.execute('''INSERT INTO users(email, username, password, is_paid, api_key, daily_limit, usages_today, last_use) 
-                                 VALUES (?,?,?, 1, 'YOUR_FREE_KEY', 5, 0, ?)''', 
-                              (ne, nu, make_hashes(np), str(date.today())))
-                    conn.commit()
+                    # إضافة سجل جديد لـ Supabase
+                    new_user = {
+                        "email": ne, "username": nu, "password": make_hashes(np),
+                        "is_paid": 1, "api_key": 'YOUR_FREE_KEY', "daily_limit": 5, 
+                        "usages_today": 0, "last_use": str(date.today())
+                    }
+                    supabase.table("users").insert(new_user).execute()
                     st.success("🎉 تم إنشاء الحساب بنجاح! اهلا بك في بصيره.")
                 except sqlite3.IntegrityError:
                     st.error("⚠️ هذا المستخدم أو البريد مسجل مسبقاً.")
@@ -258,8 +293,10 @@ def auth_page():
                 st.warning("الرجاء تعبئة جميع الخانات")
 def app_interface():
     # 1. جلب بيانات المستخدم من قاعدة البيانات
-    c.execute('SELECT is_paid, api_key, daily_limit, usages_today FROM users WHERE username=?', (st.session_state['username'],))
-    u_info = c.fetchone()
+    # جلب البيانات المطلوبة فقط من Supabase
+    res = supabase.table("users").select("is_paid, api_key, daily_limit, usages_today").eq("username", st.session_state['username']).execute()
+    # تحويل النتيجة لشكل يشبه tuple القديم (لسهولة التوافق مع كودك الحالي)
+    u_info = list(res.data[0].values()) if res.data else None
     
     # 1. التحقق من بيانات المستخدم (لضمان الأمان وعدم تعطل التطبيق)
     # 1. التحقق من بيانات المستخدم
@@ -419,9 +456,10 @@ def app_interface():
         st.markdown("<h2 style='text-align: center; color: #007BFF;'>⚙️ لوحة التحكم بالمستخدمين</h2>", unsafe_allow_html=True)
         
         # جلب قائمة المستخدمين
-        c.execute('SELECT username, is_paid, api_key, daily_limit FROM users')
-        users_list = c.fetchall()
-        
+        # جلب كل المستخدمين من Supabase
+        res = supabase.table("users").select("username, is_paid, api_key, daily_limit").execute()
+        # تحويل البيانات إلى قائمة Tuples لكي يتوافق مع باقي كودك القديم
+        users_list = [tuple(user.values()) for user in res.data] if res.data else []
         if not users_list:
             st.info("لا يوجد مستخدمين مسجلين حالياً.")
         
@@ -446,9 +484,13 @@ def app_interface():
                 
                 # زر الحفظ لكل مستخدم بشكل مستقل
                 if st.button(f"حفظ تعديلات {user[0]}", key=f"save_btn_{user[0]}", use_container_width=True):
-                    c.execute('UPDATE users SET is_paid=?, api_key=?, daily_limit=? WHERE username=?', 
-                              (int(new_active), new_key, new_limit, user[0]))
-                    conn.commit()
+                    # تحديث البيانات في Supabase بناءً على اسم المستخدم
+                    update_data = {
+                        "is_paid": int(new_active),
+                        "api_key": new_key,
+                        "daily_limit": new_limit
+                    }
+                    supabase.table("users").update(update_data).eq("username", user[0]).execute()
                     st.success(f"✅ تم تحديث بيانات {user[0]} بنجاح!")
                     st.rerun()
 
