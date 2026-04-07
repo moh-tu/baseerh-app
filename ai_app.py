@@ -262,7 +262,7 @@ def auth_page():
                 data = res.data[0] if res.data else None # 
                 if data:
                     st.session_state['logged_in'] = True
-                    st.session_state['username'] = data[0]
+                    st.session_state['username'] = data['username']
                     st.success("تم الدخول بنجاح!")
                     st.rerun()
                 else: 
