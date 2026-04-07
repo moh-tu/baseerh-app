@@ -1,5 +1,6 @@
 streamlit
 google-generativeai
-PyPDF2
-pandas
 Pillow
+pandas
+python-docx
+PyPDF2
