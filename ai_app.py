@@ -114,19 +114,7 @@ def send_verification_code(email, code):
     except:
         return False
 logo = Image.open("logo1.png.png")
-# --- 1. إعداد قاعدة البيانات ---
-conn = sqlite3.connect('tender_ultimate_2026.db', check_same_thread=False)
-c = conn.cursor()
-try:
-    c.execute("ALTER TABLE users ADD COLUMN email TEXT UNIQUE")
-except sqlite3.OperationalError:
-    # العمود موجود مسبقًا، تجاهل الخطأ
-    pass
-conn.commit()
-c.execute('''CREATE TABLE IF NOT EXISTS users 
-             (username TEXT PRIMARY KEY, email TEXT UNIQUE, password TEXT, is_paid INTEGER DEFAULT 0, 
-              api_key TEXT DEFAULT '', daily_limit INTEGER DEFAULT 5, usages_today INTEGER DEFAULT 0, last_use TEXT)''')
-conn.commit()
+
 
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
