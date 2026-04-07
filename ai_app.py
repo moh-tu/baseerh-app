@@ -9,7 +9,7 @@ from PIL import Image
 import smtplib
 import random
 from email.mime.text import MIMEText
-from PIL import Image
+
 
 def process_image_for_api(uploaded_file):
     img = Image.open(uploaded_file)
